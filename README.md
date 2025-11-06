@@ -1,4 +1,4 @@
-# 🌦️ Toulouse Metro Weather — Application Météo Orientée Objet
+# 🌦️Weather App — Application Météo Orientée Objet
 
 ## 🧭 Description du projet
 
