@@ -31,3 +31,53 @@ Le projet repose sur une architecture orientée objet et modulaire, respectant l
 
 Le diagramme suivant illustre les relations entre les principales classes, interfaces et gestionnaires de l’application :
 ![Diagramme UML](https://uml.planttext.com/plantuml/svg/bLRTRjem5Bv7uXqiRaQxfj9kemereocBL08ZTDfTv2Q6UWfEv2JLfdKFqEVgYys_YGC6KYw0-1mVd-yxvtpnRLb1MjMxR3Zu19mJ7suFmhM_klUcVWJyDPW-U574_dfVe_NA2zP-T3u69XMY6vWW47YR3KwUuLE6mD_X0B3FPoYM48tJd124ol652ygA3WV_XeFX03wn_p2fG9B1iWHti8B-RxcY0snH5QTiVLpcDKsGsCrYf3Yfx44Y-88yaZxaC6s2b6mjhl9uWpCqBc3rBCCeQyPSumtDTuTsSS1v5lsVZAxfEbY4uCu7TuimV7_hmvtC-0U6tZ8uH5pJx02kIT7Dg-EepVtIrEMTlx-jtzyMVVEBAbZXdEW47PBlL1758qipXWKsbrInTTvY3SciKKrTiz3d-aHQawg66IwxzZ0dI92Y4tISIJUqDbnVlqxCzkHqIMmpL78F0Z55ohjiW9PgmGNixEf6sIVAoeDXH4tSfp7o80o1ZieXy2MZxCeK5v36ZEMnPffvgiCr8R_oseZLE5u1ineDHt88wgAWU6VPPN9f9MJqPGGkMREDBaTj8bPFmRGnWXzhp1dhojdAMtuBlZz-P7woLd7skxE0VrZzbknRBMoDj5rh_GKFCYZlABkBFfn7FdRs2u-XkqS4dEpLJtYCnRShSKZH4L5DreMj7vapF-9A57h1gZ-79aYF9rUs4gvovKmQZGQBmWLUKLnO8RL-RG7sFKytxnKufCMQhTA6ZaQPYg6FKR_DA7MdmzXWASenLy69WV2Odz3p8-hGVPkTh-_S3n_xbdMEI3s716uHFNmbxvWnPf904bp0R4znEqwcP1tp4LKzxM5MgkkOFEUun3JE2srZrmh1Y8d09kCzn6KHtWUpnvN7fw8lSTESRF1sZped4QjnSqDeieUKkSNIFBumttlixb6_e2saQSUXqTi-2BpbyY6OVYX_DfXDrctVoU7ILmO3aji5R6Ydg1hAEX8gHaCPcXbHDl6IY-L82DtZ-oOMxLKDurgan-fjDezxN07KNj5mEud6DST0LONMf5C6pXSNUmL5FqhGhL4Ifv_tEDFBDa1MMpTlxT99TZYuHIGLb_d_)  
+
+---
+
+##📁 Structure du projet
+
+Voici une suggestion d’arborescence respectant le principe de responsabilité unique :
+weather_station_app/
+│
+├── main.py                              # Application entry point
+│
+├── app/                                 # Application orchestration (presentation + flow)
+│   ├── __init__.py
+│   ├── app.py                           # App class (main controller)
+│   ├── config_manager.py                # ConfigManager (handles config.json)
+│   ├── menu_manager.py                  # MenuManager (CLI user interface)
+│
+├── core/                                # Core business logic and services
+│   ├── __init__.py
+│   ├── data_extractor.py                # Abstract class DataExtract + ViaAPI
+│   ├── save_and_load.py                 # Abstract SaveAndLoad mixin (JSON persistence)
+│   ├── addition_manager.py              # Add countries, cities, stations
+│   ├── refresh_manager.py               # Refresh / update weather data
+│
+├── domain/                              # Domain entities (pure models)
+│   ├── __init__.py
+│   ├── country.py                       # Country class
+│   ├── city.py                          # City class
+│   ├── station.py                       # Station class (implements IDisplayable)
+│   ├── station_manager.py               # Manages a list of stations (inherits SaveAndLoad)
+│   ├── interfaces.py                    # IDisplayable interface
+│
+├── data/                                # Persistent data
+│   ├── stations.json                    # Saved stations
+│   ├── config.json                      # Default config (country/city)
+│
+├── utils/                               # Utility functions and helpers
+│   ├── __init__.py
+│   ├── json_tools.py                    # Helpers for reading/writing JSON files
+│   ├── validators.py                    # Validation helpers (URLs, names, etc.)
+│
+├── tests/                               # Unit and integration tests
+│   ├── __init__.py
+│   ├── test_app.py
+│   ├── test_data_extractor.py
+│   ├── test_managers.py
+│   ├── test_models.py
+│
+├── requirements.txt                     # Dependencies
+├── README.md                            # Project documentation
+└── pyproject.toml / setup.cfg            # Project metadata (optional for packaging)
