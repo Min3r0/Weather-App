@@ -16,7 +16,7 @@ Le projet a été conçu dans un objectif **pédagogique et professionnel**, en 
 
 * Concevoir une application modulaire et maintenable
 * Appliquer plusieurs **Design Patterns** de manière cohérente
-* Manipuler des **structures de données personnalisées**
+* Manipuler des **structures de données complexe**
 * Séparer clairement les responsabilités (architecture propre)
 * Fournir une interface utilisateur simple en ligne de commande
 
