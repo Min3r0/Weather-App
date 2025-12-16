@@ -1,37 +1,31 @@
-"""Modèle pour une mesure météo."""
 from datetime import datetime
-from typing import Optional
 
 
 class Measurement:
-    """Représente une mesure météo."""
+    """Représente une mesure météo à un instant donné"""
 
-    def __init__(self, timestamp: str, temperature: float,
-                 humidity: int, pressure: int):
-        self.timestamp = timestamp
+    def __init__(self, heure: str, temperature: float,
+                 humidite: int, pression: int):
+        self.heure = heure
         self.temperature = temperature
-        self.humidity = humidity
-        self.pressure = pressure
-        self.datetime = self._parse_datetime(timestamp)
+        self.humidite = humidite
+        self.pression = pression
+        self._parse_datetime()
 
-    def _parse_datetime(self, timestamp: str) -> datetime:
-        """Parse le timestamp en objet datetime."""
+    def _parse_datetime(self):
+        """Parse la date/heure au format ISO"""
         try:
-            return datetime.fromisoformat(timestamp.replace('+00:00', ''))
+            self.datetime = datetime.fromisoformat(self.heure.replace('+00:00', ''))
         except:
-            return datetime.now()
-
-    def get_time_str(self) -> str:
-        """Retourne l'heure formatée."""
-        return self.datetime.strftime("%H:%M")
+            self.datetime = datetime.now()
 
     def get_date_str(self) -> str:
-        """Retourne la date formatée."""
+        """Retourne la date formatée"""
         return self.datetime.strftime("%d/%m/%Y")
 
-    def get_date_key(self) -> str:
-        """Retourne une clé de date pour le groupement."""
-        return self.datetime.strftime("%Y-%m-%d")
+    def get_time_str(self) -> str:
+        """Retourne l'heure formatée"""
+        return self.datetime.strftime("%H:%M")
 
     def __repr__(self):
-        return f"Measurement({self.get_time_str()}, {self.temperature}°C)"
+        return f"Measurement({self.get_time_str()}, {self.temperature}°C, {self.humidite}%, {self.pression}hPa)"

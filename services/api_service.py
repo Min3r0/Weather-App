@@ -1,48 +1,49 @@
-"""Service pour récupérer les données API."""
 import requests
-from typing import List, Dict, Any
-from models.station import Station
+from typing import List, Optional
 from models.measurement import Measurement
-from .api_queue import APIQueue
+from data_structures.queue import Queue
 
 
 class APIService:
-    """Service pour interagir avec l'API météo."""
+    """Service pour récupérer les données météo depuis l'API"""
 
     def __init__(self):
-        self.queue = APIQueue()
+        self.request_queue = Queue()
 
-    def fetch_measurements(self, station: Station) -> bool:
-        """Récupère les mesures d'une station."""
+    def fetch_measurements(self, url: str) -> Optional[List[Measurement]]:
+        """Récupère les mesures depuis l'API"""
         try:
-            response = requests.get(station.url, timeout=10)
+            # Ajoute la requête à la file
+            self.request_queue.enqueue(url)
+
+            # Traite la requête
+            response = requests.get(url, timeout=10)
             response.raise_for_status()
+
             data = response.json()
+            measurements = []
 
-            station.clear_measurements()
+            # Parse les résultats
+            for result in data.get('results', []):
+                # Gère différents formats de clés
+                heure = result.get('heure_de_paris') or result.get('date_de_mesure', '')
+                temp = result.get('temperature_en_degre_c', 0)
+                hum = result.get('humidite', 0)
+                press = result.get('pression', 0)
 
-            results = data.get('results', [])
-            for record in results:
-                measurement = Measurement(
-                    timestamp=record.get('heure_de_paris', ''),
-                    temperature=float(record.get('temperature_en_degre_c', 0)),
-                    humidity=int(record.get('humidite', 0)),
-                    pressure=int(record.get('pression', 0))
-                )
-                station.add_measurement(measurement)
+                measurement = Measurement(heure, temp, hum, press)
+                measurements.append(measurement)
 
-            return True
-        except Exception as e:
+            # Retire la requête de la file
+            self.request_queue.dequeue()
+
+            return measurements
+
+        except requests.RequestException as e:
             print(f"Erreur lors de la récupération des données: {e}")
-            return False
-
-    def add_to_queue(self, station: Station):
-        """Ajoute une station à la file d'attente."""
-        self.queue.enqueue(station)
-
-    def process_queue(self):
-        """Traite toutes les stations de la file."""
-        while not self.queue.is_empty():
-            station = self.queue.dequeue()
-            if station:
-                self.fetch_measurements(station)
+            self.request_queue.dequeue()
+            return None
+        except Exception as e:
+            print(f"Erreur inattendue: {e}")
+            self.request_queue.dequeue()
+            return None

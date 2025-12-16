@@ -1,55 +1,49 @@
-"""Pattern Builder pour construire des stations."""
-from models.station import Station
+from models.location import Pays, Ville, Station
+from config.config_singleton import ConfigSingleton
 
 
 class StationBuilder:
-    """Builder pour construire une station météo."""
+    """Builder pour construire des objets Station"""
 
     def __init__(self):
-        self._station: Station = None
-        self._name: str = ""
-        self._url: str = ""
-        self._city: str = ""
-        self._country: str = ""
+        self.reset()
 
     def reset(self):
-        """Réinitialise le builder."""
+        """Réinitialise le builder"""
         self._station = None
-        self._name = ""
+        self._nom = ""
+        self._ville = None
+        self._pays = None
         self._url = ""
-        self._city = ""
-        self._country = ""
+
+    def set_nom(self, nom: str) -> 'StationBuilder':
+        """Définit le nom de la station"""
+        self._nom = nom
         return self
 
-    def set_name(self, name: str):
-        """Définit le nom de la station."""
-        self._name = name
+    def set_ville(self, ville: Ville) -> 'StationBuilder':
+        """Définit la ville"""
+        self._ville = ville
         return self
 
-    def set_url(self, url: str):
-        """Définit l'URL de la station."""
+    def set_pays(self, pays: Pays) -> 'StationBuilder':
+        """Définit le pays"""
+        self._pays = pays
+        return self
+
+    def set_url(self, url: str) -> 'StationBuilder':
+        """Définit l'URL de l'API"""
         self._url = url
         return self
 
-    def set_city(self, city: str):
-        """Définit la ville de la station."""
-        self._city = city
-        return self
-
-    def set_country(self, country: str):
-        """Définit le pays de la station."""
-        self._country = country
-        return self
-
     def build(self) -> Station:
-        """Construit et retourne la station."""
-        if not self._name or not self._url:
-            raise ValueError("Le nom et l'URL sont obligatoires")
+        """Construit et retourne la station"""
+        station = Station(self._nom, self._ville, self._pays, self._url)
 
-        self._station = Station(
-            name=self._name,
-            url=self._url,
-            city=self._city,
-            country=self._country
-        )
-        return self._station
+        # Sauvegarde dans le config singleton
+        config = ConfigSingleton()
+        if self._pays and self._ville:
+            config.add_station(self._pays.nom, self._ville.nom, self._nom, self._url)
+
+        self.reset()
+        return station

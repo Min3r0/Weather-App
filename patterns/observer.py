@@ -1,48 +1,46 @@
-"""Pattern Observer pour les notifications."""
 from abc import ABC, abstractmethod
 from typing import List
 
 
 class Observer(ABC):
-    """Interface pour le pattern Observer."""
+    """Interface pour les observateurs"""
 
     @abstractmethod
-    def update(self, subject, *args, **kwargs):
-        """Méthode appelée lors d'une notification."""
+    def update(self, subject: 'Subject'):
+        """Méthode appelée lors d'une notification"""
         pass
 
 
 class Subject:
-    """Sujet observable."""
+    """Sujet observable"""
 
     def __init__(self):
         self._observers: List[Observer] = []
 
     def attach(self, observer: Observer):
-        """Attache un observateur."""
+        """Attache un observateur"""
         if observer not in self._observers:
             self._observers.append(observer)
 
     def detach(self, observer: Observer):
-        """Détache un observateur."""
+        """Détache un observateur"""
         if observer in self._observers:
             self._observers.remove(observer)
 
-    def notify(self, *args, **kwargs):
-        """Notifie tous les observateurs."""
+    def notify(self):
+        """Notifie tous les observateurs"""
         for observer in self._observers:
-            observer.update(self, *args, **kwargs)
+            observer.update(self)
 
 
-class StationObserver(Observer):
-    """Observateur pour charger les mesures d'une station."""
+class StationSubject(Subject):
+    """Sujet pour les stations - notifie lors de la sélection"""
 
-    def __init__(self, api_service):
-        self.api_service = api_service
+    def __init__(self):
+        super().__init__()
+        self.selected_station = None
 
-    def update(self, subject, *args, **kwargs):
-        """Charge les mesures lorsqu'une station est sélectionnée."""
-        station = kwargs.get('station')
-        if station:
-            print(f"\nChargement des mesures pour {station.name}...")
-            self.api_service.fetch_measurements(station)
+    def select_station(self, station):
+        """Sélectionne une station et notifie les observateurs"""
+        self.selected_station = station
+        self.notify()
