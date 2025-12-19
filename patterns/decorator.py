@@ -1,28 +1,77 @@
+"""
+Pattern Decorator pour l'affichage des mesures.
+"""
 from functools import wraps
-from typing import Callable
-import os
+from typing import Callable, Any
 
 
-def clear_screen():
-    """Nettoie l'écran du terminal"""
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-
-def display_measurements(func: Callable) -> Callable:
-    """Décorateur pour afficher les mesures d'une station"""
+def display_measurements_decorator(func: Callable) -> Callable:
+    """
+    Décorateur qui formate l'affichage des mesures météorologiques.
+    Principe DRY: centralise la logique d'affichage.
+    """
 
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)
+    def wrapper(*args, **kwargs) -> Any:
+        result = func(*args, **kwargs)
 
-        # Récupère la station depuis le résultat
-        station = result if result else kwargs.get('station')
+        if result and isinstance(result, list):
+            print("\n" + "=" * 80)
+            print("📊 MESURES MÉTÉOROLOGIQUES".center(80))
+            print("=" * 80)
 
-        if station and station.measurements:
-            clear_screen()
-            self._display_station_measurements(station)
-            input("\nAppuyez sur Entrée pour revenir au menu...")
+            if not result:
+                print("\n⚠️  Aucune mesure disponible.\n")
+            else:
+                print(f"\n📍 Nombre de mesures: {len(result)}\n")
+                print("-" * 80)
+
+                for i, measurement in enumerate(result[:20], 1):  # Limite à 20 pour la lisibilité
+                    print(f"{i:2d}. {measurement}")
+
+                if len(result) > 20:
+                    print(f"\n... et {len(result) - 20} mesure(s) supplémentaire(s)")
+
+                print("-" * 80)
+
+            print()
 
         return result
+
+    return wrapper
+
+
+def execution_time_decorator(func: Callable) -> Callable:
+    """
+    Décorateur qui mesure le temps d'exécution d'une fonction.
+    """
+    import time
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+
+        execution_time = end_time - start_time
+        print(f"⏱️  Temps d'exécution: {execution_time:.3f}s")
+
+        return result
+
+    return wrapper
+
+
+def error_handler_decorator(func: Callable) -> Callable:
+    """
+    Décorateur qui gère les erreurs de manière élégante.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"\n❌ Erreur lors de l'exécution: {str(e)}")
+            return None
 
     return wrapper

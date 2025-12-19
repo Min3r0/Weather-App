@@ -1,31 +1,56 @@
+"""
+Modèle pour les mesures météorologiques.
+"""
 from datetime import datetime
+from typing import Optional
 
 
 class Measurement:
-    """Représente une mesure météo à un instant donné"""
+    """
+    Représente une mesure météorologique.
+    Principe DRY: évite la répétition du code de mesure.
+    """
 
-    def __init__(self, heure: str, temperature: float,
-                 humidite: int, pression: int):
-        self.heure = heure
-        self.temperature = temperature
-        self.humidite = humidite
-        self.pression = pression
-        self._parse_datetime()
+    def __init__(self,
+                 heure: str,
+                 temperature: float,
+                 humidite: int,
+                 pression: int):
+        self._heure = heure
+        self._temperature = temperature
+        self._humidite = humidite
+        self._pression = pression
 
-    def _parse_datetime(self):
-        """Parse la date/heure au format ISO"""
+    @property
+    def heure(self) -> str:
+        return self._heure
+
+    @property
+    def temperature(self) -> float:
+        return self._temperature
+
+    @property
+    def humidite(self) -> int:
+        return self._humidite
+
+    @property
+    def pression(self) -> int:
+        return self._pression
+
+    def format_heure(self) -> str:
+        """Formate l'heure de manière lisible."""
         try:
-            self.datetime = datetime.fromisoformat(self.heure.replace('+00:00', ''))
-        except:
-            self.datetime = datetime.now()
+            dt = datetime.fromisoformat(self._heure.replace('Z', '+00:00'))
+            return dt.strftime("%d/%m/%Y %H:%M")
+        except (ValueError, AttributeError):
+            return self._heure
 
-    def get_date_str(self) -> str:
-        """Retourne la date formatée"""
-        return self.datetime.strftime("%d/%m/%Y")
+    def __str__(self) -> str:
+        """Représentation textuelle de la mesure."""
+        return (f"{self.format_heure()} - "
+                f"Temp: {self._temperature}°C, "
+                f"Hum: {self._humidite}%, "
+                f"Press: {self._pression} Pa")
 
-    def get_time_str(self) -> str:
-        """Retourne l'heure formatée"""
-        return self.datetime.strftime("%H:%M")
-
-    def __repr__(self):
-        return f"Measurement({self.get_time_str()}, {self.temperature}°C, {self.humidite}%, {self.pression}hPa)"
+    def __repr__(self) -> str:
+        return f"Measurement({self._heure}, {self._temperature}°C, {self._humidite}%, {self._pression}Pa)"

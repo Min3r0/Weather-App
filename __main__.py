@@ -1,8 +1,14 @@
-from ui.display import WeatherApp
+"""
+Point d'entrée de l'application météo.
+"""
+from ui.menu import MainMenu
+
 
 def main():
-    app = WeatherApp()
-    app.run()
+    """Lance l'application météo."""
+    menu = MainMenu()
+    menu.run()
+
 
 if __name__ == "__main__":
     main()
