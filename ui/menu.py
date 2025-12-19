@@ -134,6 +134,7 @@ class MainMenu:
 
             if choice == "1":
                 self._display_station_measurements(station)
+                self.pause()  # Pause après l'affichage
             elif choice == "2":
                 self._refresh_station_data(station)
             elif choice == "0":
@@ -147,7 +148,6 @@ class MainMenu:
         """Affiche les mesures avec le décorateur."""
         command = DisplayMeasurementsCommand(station)
         measurements = self._command_invoker.execute_command(command)
-        self.pause()
         return measurements
 
     def _refresh_station_data(self, station: Station) -> None:
@@ -233,15 +233,39 @@ class MainMenu:
     def _remove_country(self) -> None:
         """Supprime un pays."""
         self.display_header("SUPPRIMER UN PAYS")
-        self._list_countries()
 
-        pays_id = input("\nID du pays à supprimer: ").strip()
+        pays_dict = self._config.get_pays()
+        if not pays_dict:
+            print("⚠️  Aucun pays configuré.")
+            self.pause()
+            return
 
-        if pays_id:
-            confirmation = input(f"⚠️  Confirmer la suppression (o/n)? ").lower()
-            if confirmation == 'o':
-                command = RemoveCountryCommand(self._config, pays_id)
-                self._command_invoker.execute_command(command)
+        # Afficher la liste numérotée
+        pays_list = list(pays_dict.items())
+        for i, (pays_id, pays_data) in enumerate(pays_list, 1):
+            villes_count = len(self._config.get_villes(pays_id))
+            print(f"{i}. {pays_data['nom']} (ID: {pays_id}) - {villes_count} ville(s)")
+
+        print("0. Annuler")
+
+        choix = input("\nSélectionnez le pays à supprimer (numéro): ").strip()
+
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(pays_list):
+                pays_id = pays_list[choix_int - 1][0]
+                pays_nom = pays_list[choix_int - 1][1]['nom']
+
+                confirmation = input(f"⚠️  Confirmer la suppression de '{pays_nom}' (o/n)? ").lower()
+                if confirmation == 'o':
+                    command = RemoveCountryCommand(self._config, pays_id)
+                    self._command_invoker.execute_command(command)
+            else:
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
@@ -295,39 +319,78 @@ class MainMenu:
             self.pause()
             return
 
+        # Créer une liste des pays pour la sélection par numéro
         print("Pays disponibles:")
-        for pays_id, pays_data in pays_dict.items():
-            print(f"  {pays_id}: {pays_data['nom']}")
+        pays_list = list(pays_dict.items())
+        for i, (pays_id, pays_data) in enumerate(pays_list, 1):
+            print(f"  {i}. {pays_data['nom']}")
 
-        pays_id = input("\nID du pays: ").strip()
-        if pays_id not in pays_dict:
-            print("\n❌ Pays non trouvé.")
-            self.pause()
-            return
+        print("  0. Annuler")
 
-        nom = input("Nom de la ville: ").strip()
+        choix = input("\nSélectionnez un pays (numéro): ").strip()
 
-        if nom:
-            ville_id = str(uuid.uuid4())[:8]
-            command = AddCityCommand(self._config, ville_id, nom, pays_id)
-            self._command_invoker.execute_command(command)
-        else:
-            print("\n❌ Le nom ne peut pas être vide.")
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(pays_list):
+                pays_id = pays_list[choix_int - 1][0]
+                pays_nom = pays_list[choix_int - 1][1]['nom']
+
+                nom = input(f"\nNom de la ville ({pays_nom}): ").strip()
+
+                if nom:
+                    ville_id = str(uuid.uuid4())[:8]
+                    command = AddCityCommand(self._config, ville_id, nom, pays_id)
+                    self._command_invoker.execute_command(command)
+                else:
+                    print("\n❌ Le nom ne peut pas être vide.")
+            else:
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
     def _remove_city(self) -> None:
         """Supprime une ville."""
         self.display_header("SUPPRIMER UNE VILLE")
-        self._list_cities()
 
-        ville_id = input("\nID de la ville à supprimer: ").strip()
+        villes_dict = self._config.get_villes()
+        pays_dict = self._config.get_pays()
 
-        if ville_id:
-            confirmation = input(f"⚠️  Confirmer la suppression (o/n)? ").lower()
-            if confirmation == 'o':
-                command = RemoveCityCommand(self._config, ville_id)
-                self._command_invoker.execute_command(command)
+        if not villes_dict:
+            print("⚠️  Aucune ville configurée.")
+            self.pause()
+            return
+
+        # Afficher la liste numérotée
+        villes_list = list(villes_dict.items())
+        for i, (ville_id, ville_data) in enumerate(villes_list, 1):
+            pays_name = pays_dict.get(ville_data['pays_id'], {}).get('nom', 'Inconnu')
+            stations_count = len(self._config.get_stations(ville_id))
+            print(f"{i}. {ville_data['nom']} ({pays_name}) - ID: {ville_id} - {stations_count} station(s)")
+
+        print("0. Annuler")
+
+        choix = input("\nSélectionnez la ville à supprimer (numéro): ").strip()
+
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(villes_list):
+                ville_id = villes_list[choix_int - 1][0]
+                ville_nom = villes_list[choix_int - 1][1]['nom']
+
+                confirmation = input(f"⚠️  Confirmer la suppression de '{ville_nom}' (o/n)? ").lower()
+                if confirmation == 'o':
+                    command = RemoveCityCommand(self._config, ville_id)
+                    self._command_invoker.execute_command(command)
+            else:
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
@@ -390,70 +453,156 @@ class MainMenu:
             self.pause()
             return
 
+        # Créer une liste des villes pour la sélection par numéro
         print("Villes disponibles:")
         pays_dict = self._config.get_pays()
-        for ville_id, ville_data in villes_dict.items():
+        villes_list = list(villes_dict.items())
+
+        for i, (ville_id, ville_data) in enumerate(villes_list, 1):
             pays_nom = pays_dict.get(ville_data['pays_id'], {}).get('nom', 'Inconnu')
-            print(f"  {ville_id}: {ville_data['nom']} ({pays_nom})")
+            print(f"  {i}. {ville_data['nom']} ({pays_nom})")
 
-        ville_id = input("\nID de la ville: ").strip()
-        if ville_id not in villes_dict:
-            print("\n❌ Ville non trouvée.")
-            self.pause()
-            return
+        print("  0. Annuler")
 
-        nom = input("Nom de la station: ").strip()
-        api_url = input("URL de l'API: ").strip()
+        choix = input("\nSélectionnez une ville (numéro): ").strip()
 
-        if nom and api_url:
-            # Test de l'URL
-            print("\n🔍 Test de l'URL...")
-            if self._api_service.test_api_url(api_url):
-                station_id = str(uuid.uuid4())[:8]
-                command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
-                self._command_invoker.execute_command(command)
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(villes_list):
+                ville_id = villes_list[choix_int - 1][0]
+                ville_nom = villes_list[choix_int - 1][1]['nom']
+
+                nom = input(f"\nNom de la station ({ville_nom}): ").strip()
+                api_url = input("URL de l'API: ").strip()
+
+                if nom and api_url:
+                    # Test de l'URL
+                    print("\n🔍 Test de l'URL...")
+                    if self._api_service.test_api_url(api_url):
+                        print("✅ URL valide !")
+                        station_id = str(uuid.uuid4())[:8]
+                        command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
+                        self._command_invoker.execute_command(command)
+                    else:
+                        print("⚠️  L'URL ne semble pas valide, mais la station sera ajoutée quand même.")
+                        confirmation = input("Continuer quand même ? (o/n): ").lower()
+                        if confirmation == 'o':
+                            station_id = str(uuid.uuid4())[:8]
+                            command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
+                            self._command_invoker.execute_command(command)
+                else:
+                    print("\n❌ Tous les champs sont obligatoires.")
             else:
-                print("⚠️  L'URL ne semble pas valide, mais la station sera ajoutée quand même.")
-                station_id = str(uuid.uuid4())[:8]
-                command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
-                self._command_invoker.execute_command(command)
-        else:
-            print("\n❌ Tous les champs sont obligatoires.")
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
     def _update_station_url(self) -> None:
         """Modifie l'URL d'une station."""
         self.display_header("MODIFIER L'URL D'UNE STATION")
-        self._list_stations()
 
-        station_id = input("\nID de la station: ").strip()
+        stations_dict = self._config.get_stations()
+        if not stations_dict:
+            print("⚠️  Aucune station configurée.")
+            self.pause()
+            return
 
-        if station_id in self._config.get_stations():
-            new_url = input("Nouvelle URL de l'API: ").strip()
+        # Afficher la liste numérotée
+        villes_dict = self._config.get_villes()
+        pays_dict = self._config.get_pays()
+        stations_list = list(stations_dict.items())
 
-            if new_url:
-                command = UpdateStationUrlCommand(self._config, station_id, new_url)
-                self._command_invoker.execute_command(command)
+        for i, (station_id, station_data) in enumerate(stations_list, 1):
+            ville = villes_dict.get(station_data['ville_id'], {})
+            ville_nom = ville.get('nom', 'Inconnu')
+            pays_nom = pays_dict.get(ville.get('pays_id', ''), {}).get('nom', 'Inconnu')
+
+            print(f"\n{i}. {station_data['nom']}")
+            print(f"   Ville: {ville_nom} ({pays_nom})")
+            print(f"   URL actuelle: {station_data['api_url'][:60]}...")
+
+        print("\n0. Annuler")
+
+        choix = input("\nSélectionnez la station à modifier (numéro): ").strip()
+
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(stations_list):
+                station_id = stations_list[choix_int - 1][0]
+                station_nom = stations_list[choix_int - 1][1]['nom']
+
+                new_url = input(f"\nNouvelle URL de l'API pour '{station_nom}': ").strip()
+
+                if new_url:
+                    # Test de l'URL
+                    print("\n🔍 Test de l'URL...")
+                    if self._api_service.test_api_url(new_url):
+                        print("✅ URL valide !")
+                        command = UpdateStationUrlCommand(self._config, station_id, new_url)
+                        self._command_invoker.execute_command(command)
+                    else:
+                        print("⚠️  L'URL ne semble pas valide.")
+                        confirmation = input("Mettre à jour quand même ? (o/n): ").lower()
+                        if confirmation == 'o':
+                            command = UpdateStationUrlCommand(self._config, station_id, new_url)
+                            self._command_invoker.execute_command(command)
+                else:
+                    print("\n❌ L'URL ne peut pas être vide.")
             else:
-                print("\n❌ L'URL ne peut pas être vide.")
-        else:
-            print("\n❌ Station non trouvée.")
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
     def _remove_station(self) -> None:
         """Supprime une station."""
         self.display_header("SUPPRIMER UNE STATION")
-        self._list_stations()
 
-        station_id = input("\nID de la station à supprimer: ").strip()
+        stations_dict = self._config.get_stations()
+        if not stations_dict:
+            print("⚠️  Aucune station configurée.")
+            self.pause()
+            return
 
-        if station_id:
-            confirmation = input(f"⚠️  Confirmer la suppression (o/n)? ").lower()
-            if confirmation == 'o':
-                command = RemoveStationCommand(self._config, station_id)
-                self._command_invoker.execute_command(command)
+        # Afficher la liste numérotée
+        villes_dict = self._config.get_villes()
+        pays_dict = self._config.get_pays()
+        stations_list = list(stations_dict.items())
+
+        for i, (station_id, station_data) in enumerate(stations_list, 1):
+            ville = villes_dict.get(station_data['ville_id'], {})
+            ville_nom = ville.get('nom', 'Inconnu')
+            pays_nom = pays_dict.get(ville.get('pays_id', ''), {}).get('nom', 'Inconnu')
+
+            print(f"{i}. {station_data['nom']} ({ville_nom}, {pays_nom})")
+
+        print("0. Annuler")
+
+        choix = input("\nSélectionnez la station à supprimer (numéro): ").strip()
+
+        try:
+            choix_int = int(choix)
+            if choix_int == 0:
+                return
+            if 1 <= choix_int <= len(stations_list):
+                station_id = stations_list[choix_int - 1][0]
+                station_nom = stations_list[choix_int - 1][1]['nom']
+
+                confirmation = input(f"⚠️  Confirmer la suppression de '{station_nom}' (o/n)? ").lower()
+                if confirmation == 'o':
+                    command = RemoveStationCommand(self._config, station_id)
+                    self._command_invoker.execute_command(command)
+            else:
+                print("\n❌ Numéro invalide.")
+        except ValueError:
+            print("\n❌ Veuillez entrer un numéro valide.")
 
         self.pause()
 
