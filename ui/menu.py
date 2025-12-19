@@ -34,11 +34,6 @@ class MainMenu:
         self._command_invoker = CommandInvoker()
         self._running = True
 
-        # Cache pour les objets créés
-        self._pays_cache = {}
-        self._villes_cache = {}
-        self._stations_cache = {}
-
     def clear_screen(self) -> None:
         """Nettoie le terminal."""
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -463,8 +458,12 @@ class MainMenu:
         self.pause()
 
     def _load_stations_to_linked_list(self) -> LinkedList:
-        """Charge les stations dans une liste chaînée."""
+        """Charge les stations dans une liste chaînée depuis la configuration."""
         stations_list = LinkedList()
+
+        # Caches locaux pour cette session de chargement
+        pays_cache = {}
+        villes_cache = {}
 
         # Charger depuis la configuration
         pays_dict = self._config.get_pays()
@@ -473,36 +472,29 @@ class MainMenu:
 
         # Créer les objets Pays
         for pays_id, pays_data in pays_dict.items():
-            if pays_id not in self._pays_cache:
-                self._pays_cache[pays_id] = Pays(pays_id, pays_data['nom'])
+            pays_cache[pays_id] = Pays(pays_id, pays_data['nom'])
 
         # Créer les objets Ville
         for ville_id, ville_data in villes_dict.items():
-            if ville_id not in self._villes_cache:
-                pays = self._pays_cache.get(ville_data['pays_id'])
-                if pays:
-                    self._villes_cache[ville_id] = Ville(ville_id, ville_data['nom'], pays)
+            pays = pays_cache.get(ville_data['pays_id'])
+            if pays:
+                villes_cache[ville_id] = Ville(ville_id, ville_data['nom'], pays)
 
         # Créer les objets Station avec le Builder
         for station_id, station_data in stations_dict.items():
-            if station_id not in self._stations_cache:
-                ville = self._villes_cache.get(station_data['ville_id'])
-                if ville:
-                    try:
-                        builder = StationBuilder()
-                        station = (builder
-                                   .set_id(station_id)
-                                   .set_nom(station_data['nom'])
-                                   .set_ville(ville)
-                                   .set_api_url(station_data['api_url'])
-                                   .build())
-                        self._stations_cache[station_id] = station
-                    except ValueError as e:
-                        print(f"⚠️  Erreur lors de la création de la station: {e}")
-
-        # Ajouter les stations à la liste chaînée
-        for station in self._stations_cache.values():
-            stations_list.append(station)
+            ville = villes_cache.get(station_data['ville_id'])
+            if ville:
+                try:
+                    builder = StationBuilder()
+                    station = (builder
+                             .set_id(station_id)
+                             .set_nom(station_data['nom'])
+                             .set_ville(ville)
+                             .set_api_url(station_data['api_url'])
+                             .build())
+                    stations_list.append(station)
+                except ValueError as e:
+                    print(f"⚠️  Erreur lors de la création de la station: {e}")
 
         return stations_list
 

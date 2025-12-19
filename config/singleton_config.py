@@ -3,7 +3,7 @@ Pattern Singleton pour la configuration de l'application.
 """
 import json
 import os
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 
 
 class ConfigurationSingleton:
@@ -17,47 +17,38 @@ class ConfigurationSingleton:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._initialize()
         return cls._instance
 
     def __init__(self):
         if not self._initialized:
-            self._config: Dict = {
-                "pays": {},
-                "villes": {},
-                "stations": {}
-            }
             self._config_file = "config.json"
+            self._initialize_config()
             self._load_configuration()
             ConfigurationSingleton._initialized = True
 
-    def _initialize(self) -> None:
-        # Initialisation sûre de la structure attendue
-        self._config: Dict[str, Any] = {
+    def _initialize_config(self) -> None:
+        """Initialise la structure de configuration par défaut."""
+        self._config: Dict = {
             "pays": {},
             "villes": {},
             "stations": {}
         }
-
-    def get_config(self) -> Dict[str, Any]:
-        return self._config
-
-    def add_pays(self, pays_id: str, nom: str) -> None:
-        # Utilise setdefault pour éviter KeyError si la clé n'existait pas
-        self._config.setdefault("pays", {})[pays_id] = {"nom": nom}
-
-    def remove_pays(self, pays_id: str) -> bool:
-        return self._config.get("pays", {}).pop(pays_id, None) is not None
 
     def _load_configuration(self) -> None:
         """Charge la configuration depuis le fichier JSON."""
         if os.path.exists(self._config_file):
             try:
                 with open(self._config_file, 'r', encoding='utf-8') as f:
-                    self._config = json.load(f)
+                    loaded_config = json.load(f)
+                    # Fusionner avec la structure par défaut pour éviter les KeyError
+                    self._config["pays"] = loaded_config.get("pays", {})
+                    self._config["villes"] = loaded_config.get("villes", {})
+                    self._config["stations"] = loaded_config.get("stations", {})
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Erreur lors du chargement de la configuration: {e}")
-                self._config = {"pays": {}, "villes": {}, "stations": {}}
+                self._initialize_config()
+        else:
+            print("📝 Aucun fichier de configuration trouvé. Un nouveau sera créé.")
 
     def _save_configuration(self) -> None:
         """Sauvegarde la configuration dans le fichier JSON."""
@@ -87,14 +78,16 @@ class ConfigurationSingleton:
 
     def add_pays(self, pays_id: str, nom: str) -> None:
         """Ajoute un nouveau pays."""
+        if "pays" not in self._config:
+            self._config["pays"] = {}
         self._config["pays"][pays_id] = {"nom": nom}
         self._save_configuration()
 
     def remove_pays(self, pays_id: str) -> bool:
         """Supprime un pays et ses villes/stations associées."""
-        if pays_id in self._config["pays"]:
+        if pays_id in self._config.get("pays", {}):
             # Supprimer les villes et stations liées
-            villes_to_remove = [v_id for v_id, v in self._config["villes"].items()
+            villes_to_remove = [v_id for v_id, v in self._config.get("villes", {}).items()
                                if v.get("pays_id") == pays_id]
             for v_id in villes_to_remove:
                 self.remove_ville(v_id)
@@ -106,6 +99,8 @@ class ConfigurationSingleton:
 
     def add_ville(self, ville_id: str, nom: str, pays_id: str) -> None:
         """Ajoute une nouvelle ville."""
+        if "villes" not in self._config:
+            self._config["villes"] = {}
         self._config["villes"][ville_id] = {
             "nom": nom,
             "pays_id": pays_id
@@ -114,9 +109,9 @@ class ConfigurationSingleton:
 
     def remove_ville(self, ville_id: str) -> bool:
         """Supprime une ville et ses stations associées."""
-        if ville_id in self._config["villes"]:
+        if ville_id in self._config.get("villes", {}):
             # Supprimer les stations liées
-            stations_to_remove = [s_id for s_id, s in self._config["stations"].items()
+            stations_to_remove = [s_id for s_id, s in self._config.get("stations", {}).items()
                                  if s.get("ville_id") == ville_id]
             for s_id in stations_to_remove:
                 self.remove_station(s_id)
@@ -128,6 +123,8 @@ class ConfigurationSingleton:
 
     def add_station(self, station_id: str, nom: str, ville_id: str, api_url: str) -> None:
         """Ajoute une nouvelle station météo."""
+        if "stations" not in self._config:
+            self._config["stations"] = {}
         self._config["stations"][station_id] = {
             "nom": nom,
             "ville_id": ville_id,
@@ -137,7 +134,7 @@ class ConfigurationSingleton:
 
     def update_station_url(self, station_id: str, new_url: str) -> bool:
         """Met à jour l'URL API d'une station."""
-        if station_id in self._config["stations"]:
+        if station_id in self._config.get("stations", {}):
             self._config["stations"][station_id]["api_url"] = new_url
             self._save_configuration()
             return True
@@ -145,7 +142,7 @@ class ConfigurationSingleton:
 
     def remove_station(self, station_id: str) -> bool:
         """Supprime une station météo."""
-        if station_id in self._config["stations"]:
+        if station_id in self._config.get("stations", {}):
             del self._config["stations"][station_id]
             self._save_configuration()
             return True
@@ -153,9 +150,9 @@ class ConfigurationSingleton:
 
     def get_station_by_id(self, station_id: str) -> Optional[Dict]:
         """Récupère une station par son ID."""
-        return self._config["stations"].get(station_id)
+        return self._config.get("stations", {}).get(station_id)
 
     def get_all_stations_list(self) -> List[tuple]:
         """Retourne la liste de toutes les stations (id, nom, url)."""
         return [(s_id, s["nom"], s["api_url"])
-                for s_id, s in self._config["stations"].items()]
+                for s_id, s in self._config.get("stations", {}).items()]
