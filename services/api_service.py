@@ -3,9 +3,9 @@ Service pour gérer les appels à l'API météo.
 """
 import requests
 from typing import List, Dict, Optional
-from data_structures.queue import Queue
-from models.measurement import Measurement
-from models.location import Station
+from weather_app.data_structures.queue import Queue
+from weather_app.models.measurement import Measurement
+from weather_app.models.location import Station
 
 
 class ApiService:

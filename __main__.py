@@ -1,7 +1,7 @@
 """
 Point d'entrée de l'application météo.
 """
-from ui.menu import MainMenu
+from weather_app.ui.menu import MainMenu
 
 
 def main():

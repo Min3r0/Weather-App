@@ -2,7 +2,7 @@
 Pattern Builder pour la construction des stations météo.
 """
 from typing import Optional
-from models.location import Station, Ville, Pays
+from weather_app.models.location import Station, Ville, Pays
 
 
 class StationBuilder:

@@ -2,21 +2,20 @@
 Interface utilisateur avec menus de navigation.
 """
 import os
-from typing import Optional
-from config.singleton_config import ConfigurationSingleton
-from services.api_service import ApiService
-from patterns.observer import StationSelector, DataLoader
-from patterns.command import (
+import uuid
+from weather_app.config.singleton_config import ConfigurationSingleton
+from weather_app.services.api_service import ApiService
+from weather_app.patterns.observer import StationSelector, DataLoader
+from weather_app.patterns.command import (
     CommandInvoker, SelectStationCommand, RefreshDataCommand,
     DisplayMeasurementsCommand, AddCountryCommand, RemoveCountryCommand,
     AddCityCommand, RemoveCityCommand, AddStationCommand,
     RemoveStationCommand, UpdateStationUrlCommand
 )
-from patterns.decorator import display_measurements_decorator
-from data_structures.linked_list import LinkedList
-from models.location import Pays, Ville, Station
-from models.builders import StationBuilder, VilleBuilder
-import uuid
+from weather_app.patterns.decorator import display_measurements_decorator
+from weather_app.data_structures.linked_list import LinkedList
+from weather_app.models.location import Pays, Ville, Station
+from weather_app.models.builders import StationBuilder, VilleBuilder
 
 
 class MainMenu:

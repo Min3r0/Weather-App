@@ -2,14 +2,9 @@
 Modèle pour les mesures météorologiques.
 """
 from datetime import datetime
-from typing import Optional
 
 
 class Measurement:
-    """
-    Représente une mesure météorologique.
-    Principe DRY: évite la répétition du code de mesure.
-    """
 
     def __init__(self,
                  heure: str,
