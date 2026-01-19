@@ -129,7 +129,7 @@ class AddStationCommand(Command):
     def execute(self) -> Any:
         """Ajoute une station."""
         self._config.add_station(self._station_id, self._station_name,
-                                self._city_id, self._api_url)
+                                 self._city_id, self._api_url)
         print(f"✅ Station '{self._station_name}' ajoutée avec succès.")
 
 

@@ -130,7 +130,7 @@ def _print_line(label: str, values: list, col_width: int, terminal_width: int) -
 
     # Tronquer si nécessaire
     if len(line) > terminal_width:
-        line = line[:terminal_width-3] + "..."
+        line = line[:terminal_width - 3] + "..."
 
     print(line)
 

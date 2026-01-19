@@ -635,11 +635,11 @@ class MainMenu:
                 try:
                     builder = StationBuilder()
                     station = (builder
-                             .set_id(station_id)
-                             .set_nom(station_data['nom'])
-                             .set_ville(ville)
-                             .set_api_url(station_data['api_url'])
-                             .build())
+                               .set_id(station_id)
+                               .set_nom(station_data['nom'])
+                               .set_ville(ville)
+                               .set_api_url(station_data['api_url'])
+                               .build())
                     stations_list.append(station)
                 except ValueError as e:
                     print(f"⚠️  Erreur lors de la création de la station: {e}")

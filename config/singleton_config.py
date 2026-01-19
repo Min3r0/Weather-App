@@ -88,7 +88,7 @@ class ConfigurationSingleton:
         if pays_id in self._config.get("pays", {}):
             # Supprimer les villes et stations liées
             villes_to_remove = [v_id for v_id, v in self._config.get("villes", {}).items()
-                               if v.get("pays_id") == pays_id]
+                                if v.get("pays_id") == pays_id]
             for v_id in villes_to_remove:
                 self.remove_ville(v_id)
 
@@ -112,7 +112,7 @@ class ConfigurationSingleton:
         if ville_id in self._config.get("villes", {}):
             # Supprimer les stations liées
             stations_to_remove = [s_id for s_id, s in self._config.get("stations", {}).items()
-                                 if s.get("ville_id") == ville_id]
+                                  if s.get("ville_id") == ville_id]
             for s_id in stations_to_remove:
                 self.remove_station(s_id)
 
