@@ -1,8 +1,10 @@
 """
 Service pour gérer les appels à l'API météo.
 """
+from typing import List, Dict
+
 import requests
-from typing import List, Dict, Optional
+
 from weather_app.data_structures.queue import Queue
 from weather_app.models.measurement import Measurement
 from weather_app.models.location import Station
@@ -11,17 +13,20 @@ from weather_app.models.location import Station
 class ApiService:
     """
     Service pour gérer les requêtes API.
-    Principe SOLID: Single Responsibility - gère uniquement les appels API.
     """
 
     def __init__(self):
+        """Initialise le service API avec une file de requêtes."""
         self._request_queue = Queue()
         self._timeout = 10  # Timeout en secondes
 
     def fetch_data_for_station(self, station: Station) -> bool:
         """
-        Récupère les données météo pour une station.
-        Utilise une file pour gérer les requêtes.
+        Args:
+            station: La station pour laquelle récupérer les données
+
+        Returns:
+            True si les données ont été chargées avec succès, False sinon
         """
         try:
             self._request_queue.enqueue(station.api_url)
@@ -52,8 +57,11 @@ class ApiService:
 
     def _parse_measurements(self, data: Dict) -> List[Measurement]:
         """
-        Parse les données JSON de l'API en objets Measurement.
-        Principe DRY: centralise la logique de parsing.
+       Args:
+            data: Les données JSON de l'API
+
+        Returns:
+            Liste d'objets Measurement
         """
         measurements = []
 
@@ -74,11 +82,17 @@ class ApiService:
         return measurements
 
     def test_api_url(self, url: str) -> bool:
-        """Teste si une URL d'API est valide."""
+        """
+        rgs:
+            url: L'URL à tester
+
+        Returns:
+            True si l'URL est valide, False sinon
+        """
         try:
             response = requests.get(url, timeout=self._timeout)
             response.raise_for_status()
             data = response.json()
             return 'results' in data
-        except Exception:
+        except (requests.exceptions.RequestException, ValueError, KeyError):
             return False

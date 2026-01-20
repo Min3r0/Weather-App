@@ -1,6 +1,10 @@
 """
 Pattern Observer pour gérer les événements de sélection de station.
+
+Note: Les classes Observer ont intentionnellement peu de méthodes (pattern design).
 """
+# pylint: disable=too-few-public-methods
+
 from abc import ABC, abstractmethod
 from typing import List, Any
 
@@ -10,31 +14,46 @@ class Observer(ABC):
 
     @abstractmethod
     def update(self, subject: Any, *args, **kwargs) -> None:
-        """Méthode appelée lors d'une notification."""
-        pass
+        """
+        Args:
+            subject: Le sujet qui notifie
+            *args: Arguments positionnels
+            **kwargs: Arguments nommés
+        """
+        raise NotImplementedError
 
 
 class Subject:
     """
     Sujet observable qui notifie les observateurs.
-    Principe SOLID: Dependency Inversion - dépend d'abstractions.
     """
 
     def __init__(self):
+        """Initialise le sujet avec une liste vide d'observateurs."""
         self._observers: List[Observer] = []
 
     def attach(self, observer: Observer) -> None:
-        """Attache un observateur."""
+        """
+        Args:
+            observer: L'observateur à attacher
+        """
         if observer not in self._observers:
             self._observers.append(observer)
 
     def detach(self, observer: Observer) -> None:
-        """Détache un observateur."""
+        """
+        Args:
+            observer: L'observateur à détacher
+        """
         if observer in self._observers:
             self._observers.remove(observer)
 
     def notify(self, *args, **kwargs) -> None:
-        """Notifie tous les observateurs."""
+        """
+        Args:
+            *args: Arguments positionnels à transmettre
+            **kwargs: Arguments nommés à transmettre
+        """
         for observer in self._observers:
             observer.update(self, *args, **kwargs)
 
@@ -46,17 +65,24 @@ class StationSelector(Subject):
     """
 
     def __init__(self):
+        """Initialise le sélecteur sans station sélectionnée."""
         super().__init__()
         self._selected_station = None
 
     def select_station(self, station: Any) -> None:
-        """Sélectionne une station et notifie les observateurs."""
+        """
+        Args:
+            station: La station à sélectionner
+        """
         self._selected_station = station
         self.notify(station=station)
 
     @property
     def selected_station(self):
-        """Retourne la station sélectionnée."""
+        """
+        Returns:
+            La station actuellement sélectionnée
+        """
         return self._selected_station
 
 
@@ -66,10 +92,19 @@ class DataLoader(Observer):
     """
 
     def __init__(self, api_service):
+        """
+        Args:
+            api_service: Le service API pour charger les données
+        """
         self._api_service = api_service
 
     def update(self, subject: Any, *args, **kwargs) -> None:
-        """Charge les données de la station sélectionnée."""
+        """
+        Args:
+            subject: Le sujet qui notifie (non utilisé)
+            *args: Arguments positionnels (non utilisés)
+            **kwargs: Arguments nommés contenant 'station'
+        """
         station = kwargs.get('station')
         if station:
             print(f"\n🔄 Chargement des données pour {station.nom}...")

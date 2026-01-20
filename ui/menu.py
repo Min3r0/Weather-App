@@ -1,6 +1,11 @@
 """
 Interface utilisateur avec menus de navigation.
+
+Note: Certaines méthodes ont beaucoup de variables locales car elles gèrent
+des menus complexes avec validation et affichage (disable R0914).
 """
+# pylint: disable=too-many-locals
+
 import os
 import uuid
 from weather_app.config.singleton_config import ConfigurationSingleton
@@ -15,16 +20,16 @@ from weather_app.patterns.command import (
 from weather_app.patterns.decorator import display_measurements_decorator
 from weather_app.data_structures.linked_list import LinkedList
 from weather_app.models.location import Pays, Ville, Station
-from weather_app.models.builders import StationBuilder, VilleBuilder
+from weather_app.models.builders import StationBuilder
 
 
 class MainMenu:
     """
     Menu principal de l'application.
-    Principe KISS: interface simple et intuitive.
     """
 
     def __init__(self):
+        """Initialise le menu principal avec tous les composants nécessaires."""
         self._config = ConfigurationSingleton()
         self._api_service = ApiService()
         self._station_selector = StationSelector()
@@ -38,14 +43,27 @@ class MainMenu:
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def display_header(self, title: str) -> None:
-        """Affiche un en-tête formaté."""
+        """
+        Affiche un en-tête formaté.
+
+        Args:
+            title: Le titre à afficher
+        """
         self.clear_screen()
         print("\n" + "=" * 80)
         print(f"🌤️  {title}".center(80))
         print("=" * 80 + "\n")
 
     def get_user_choice(self, prompt: str = "Entrez votre choix: ") -> str:
-        """Récupère le choix de l'utilisateur."""
+        """
+        Récupère le choix de l'utilisateur.
+
+        Args:
+            prompt: Le message à afficher
+
+        Returns:
+            Le choix de l'utilisateur
+        """
         return input(prompt).strip()
 
     def pause(self) -> None:
@@ -86,7 +104,10 @@ class MainMenu:
 
         if stations_list.is_empty():
             print("⚠️  Aucune station configurée.")
-            print("\n💡 Veuillez d'abord ajouter des stations dans la configuration.")
+            print(
+                "\n💡 Veuillez d'abord ajouter des stations "
+                "dans la configuration."
+            )
             self.pause()
             return
 
@@ -114,7 +135,12 @@ class MainMenu:
             self.pause()
 
     def _show_station_details(self, station: Station) -> None:
-        """Affiche les détails et mesures d'une station."""
+        """
+        Affiche les détails et mesures d'une station.
+
+        Args:
+            station: La station à afficher
+        """
         # Utiliser le pattern Command pour sélectionner la station
         command = SelectStationCommand(self._station_selector, station)
         self._command_invoker.execute_command(command)
@@ -133,7 +159,7 @@ class MainMenu:
 
             if choice == "1":
                 self._display_station_measurements(station)
-                self.pause()  # Pause après l'affichage
+                self.pause()
             elif choice == "2":
                 self._refresh_station_data(station)
             elif choice == "0":
@@ -144,13 +170,23 @@ class MainMenu:
 
     @display_measurements_decorator
     def _display_station_measurements(self, station: Station):
-        """Affiche les mesures avec le décorateur."""
+        """
+        Affiche les mesures avec le décorateur.
+
+        Args:
+            station: La station dont afficher les mesures
+        """
         command = DisplayMeasurementsCommand(station)
         measurements = self._command_invoker.execute_command(command)
         return measurements
 
     def _refresh_station_data(self, station: Station) -> None:
-        """Rafraîchit les données d'une station."""
+        """
+        Rafraîchit les données d'une station.
+
+        Args:
+            station: La station à rafraîchir
+        """
         command = RefreshDataCommand(self._api_service, station)
         self._command_invoker.execute_command(command)
         self.pause()
@@ -211,7 +247,10 @@ class MainMenu:
         else:
             for pays_id, pays_data in pays.items():
                 villes_count = len(self._config.get_villes(pays_id))
-                print(f"• {pays_data['nom']} (ID: {pays_id}) - {villes_count} ville(s)")
+                print(
+                    f"• {pays_data['nom']} (ID: {pays_id}) - "
+                    f"{villes_count} ville(s)"
+                )
 
         self.pause()
 
@@ -243,11 +282,16 @@ class MainMenu:
         pays_list = list(pays_dict.items())
         for i, (pays_id, pays_data) in enumerate(pays_list, 1):
             villes_count = len(self._config.get_villes(pays_id))
-            print(f"{i}. {pays_data['nom']} (ID: {pays_id}) - {villes_count} ville(s)")
+            print(
+                f"{i}. {pays_data['nom']} (ID: {pays_id}) - "
+                f"{villes_count} ville(s)"
+            )
 
         print("0. Annuler")
 
-        choix = input("\nSélectionnez le pays à supprimer (numéro): ").strip()
+        choix = input(
+            "\nSélectionnez le pays à supprimer (numéro): "
+        ).strip()
 
         try:
             choix_int = int(choix)
@@ -257,7 +301,9 @@ class MainMenu:
                 pays_id = pays_list[choix_int - 1][0]
                 pays_nom = pays_list[choix_int - 1][1]['nom']
 
-                confirmation = input(f"⚠️  Confirmer la suppression de '{pays_nom}' (o/n)? ").lower()
+                confirmation = input(
+                    f"⚠️  Confirmer la suppression de '{pays_nom}' (o/n)? "
+                ).lower()
                 if confirmation == 'o':
                     command = RemoveCountryCommand(self._config, pays_id)
                     self._command_invoker.execute_command(command)
@@ -301,10 +347,14 @@ class MainMenu:
             print("⚠️  Aucune ville configurée.")
         else:
             for ville_id, ville_data in villes.items():
-                pays_name = pays_dict.get(ville_data['pays_id'], {}).get('nom', 'Inconnu')
+                pays_name = pays_dict.get(
+                    ville_data['pays_id'], {}
+                ).get('nom', 'Inconnu')
                 stations_count = len(self._config.get_stations(ville_id))
-                print(f"• {ville_data['nom']} ({pays_name}) "
-                      f"(ID: {ville_id}) - {stations_count} station(s)")
+                print(
+                    f"• {ville_data['nom']} ({pays_name}) "
+                    f"(ID: {ville_id}) - {stations_count} station(s)"
+                )
 
         self.pause()
 
@@ -314,7 +364,10 @@ class MainMenu:
 
         pays_dict = self._config.get_pays()
         if not pays_dict:
-            print("⚠️  Aucun pays configuré. Veuillez d'abord ajouter un pays.")
+            print(
+                "⚠️  Aucun pays configuré. "
+                "Veuillez d'abord ajouter un pays."
+            )
             self.pause()
             return
 
@@ -340,7 +393,9 @@ class MainMenu:
 
                 if nom:
                     ville_id = str(uuid.uuid4())[:8]
-                    command = AddCityCommand(self._config, ville_id, nom, pays_id)
+                    command = AddCityCommand(
+                        self._config, ville_id, nom, pays_id
+                    )
                     self._command_invoker.execute_command(command)
                 else:
                     print("\n❌ Le nom ne peut pas être vide.")
@@ -366,13 +421,20 @@ class MainMenu:
         # Afficher la liste numérotée
         villes_list = list(villes_dict.items())
         for i, (ville_id, ville_data) in enumerate(villes_list, 1):
-            pays_name = pays_dict.get(ville_data['pays_id'], {}).get('nom', 'Inconnu')
+            pays_name = pays_dict.get(
+                ville_data['pays_id'], {}
+            ).get('nom', 'Inconnu')
             stations_count = len(self._config.get_stations(ville_id))
-            print(f"{i}. {ville_data['nom']} ({pays_name}) - ID: {ville_id} - {stations_count} station(s)")
+            print(
+                f"{i}. {ville_data['nom']} ({pays_name}) - "
+                f"ID: {ville_id} - {stations_count} station(s)"
+            )
 
         print("0. Annuler")
 
-        choix = input("\nSélectionnez la ville à supprimer (numéro): ").strip()
+        choix = input(
+            "\nSélectionnez la ville à supprimer (numéro): "
+        ).strip()
 
         try:
             choix_int = int(choix)
@@ -382,7 +444,9 @@ class MainMenu:
                 ville_id = villes_list[choix_int - 1][0]
                 ville_nom = villes_list[choix_int - 1][1]['nom']
 
-                confirmation = input(f"⚠️  Confirmer la suppression de '{ville_nom}' (o/n)? ").lower()
+                confirmation = input(
+                    f"⚠️  Confirmer la suppression de '{ville_nom}' (o/n)? "
+                ).lower()
                 if confirmation == 'o':
                     command = RemoveCityCommand(self._config, ville_id)
                     self._command_invoker.execute_command(command)
@@ -433,7 +497,9 @@ class MainMenu:
             for station_id, station_data in stations.items():
                 ville = villes_dict.get(station_data['ville_id'], {})
                 ville_nom = ville.get('nom', 'Inconnu')
-                pays_nom = pays_dict.get(ville.get('pays_id', ''), {}).get('nom', 'Inconnu')
+                pays_nom = pays_dict.get(
+                    ville.get('pays_id', ''), {}
+                ).get('nom', 'Inconnu')
 
                 print(f"\n• {station_data['nom']}")
                 print(f"  ID: {station_id}")
@@ -448,7 +514,10 @@ class MainMenu:
 
         villes_dict = self._config.get_villes()
         if not villes_dict:
-            print("⚠️  Aucune ville configurée. Veuillez d'abord ajouter une ville.")
+            print(
+                "⚠️  Aucune ville configurée. "
+                "Veuillez d'abord ajouter une ville."
+            )
             self.pause()
             return
 
@@ -458,7 +527,9 @@ class MainMenu:
         villes_list = list(villes_dict.items())
 
         for i, (ville_id, ville_data) in enumerate(villes_list, 1):
-            pays_nom = pays_dict.get(ville_data['pays_id'], {}).get('nom', 'Inconnu')
+            pays_nom = pays_dict.get(
+                ville_data['pays_id'], {}
+            ).get('nom', 'Inconnu')
             print(f"  {i}. {ville_data['nom']} ({pays_nom})")
 
         print("  0. Annuler")
@@ -473,7 +544,9 @@ class MainMenu:
                 ville_id = villes_list[choix_int - 1][0]
                 ville_nom = villes_list[choix_int - 1][1]['nom']
 
-                nom = input(f"\nNom de la station ({ville_nom}): ").strip()
+                nom = input(
+                    f"\nNom de la station ({ville_nom}): "
+                ).strip()
                 api_url = input("URL de l'API: ").strip()
 
                 if nom and api_url:
@@ -482,14 +555,25 @@ class MainMenu:
                     if self._api_service.test_api_url(api_url):
                         print("✅ URL valide !")
                         station_id = str(uuid.uuid4())[:8]
-                        command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
+                        command = AddStationCommand(
+                            self._config, station_id, nom,
+                            ville_id, api_url
+                        )
                         self._command_invoker.execute_command(command)
                     else:
-                        print("⚠️  L'URL ne semble pas valide, mais la station sera ajoutée quand même.")
-                        confirmation = input("Continuer quand même ? (o/n): ").lower()
+                        print(
+                            "⚠️  L'URL ne semble pas valide, "
+                            "mais la station sera ajoutée quand même."
+                        )
+                        confirmation = input(
+                            "Continuer quand même ? (o/n): "
+                        ).lower()
                         if confirmation == 'o':
                             station_id = str(uuid.uuid4())[:8]
-                            command = AddStationCommand(self._config, station_id, nom, ville_id, api_url)
+                            command = AddStationCommand(
+                                self._config, station_id, nom,
+                                ville_id, api_url
+                            )
                             self._command_invoker.execute_command(command)
                 else:
                     print("\n❌ Tous les champs sont obligatoires.")
@@ -518,7 +602,9 @@ class MainMenu:
         for i, (station_id, station_data) in enumerate(stations_list, 1):
             ville = villes_dict.get(station_data['ville_id'], {})
             ville_nom = ville.get('nom', 'Inconnu')
-            pays_nom = pays_dict.get(ville.get('pays_id', ''), {}).get('nom', 'Inconnu')
+            pays_nom = pays_dict.get(
+                ville.get('pays_id', ''), {}
+            ).get('nom', 'Inconnu')
 
             print(f"\n{i}. {station_data['nom']}")
             print(f"   Ville: {ville_nom} ({pays_nom})")
@@ -526,7 +612,9 @@ class MainMenu:
 
         print("\n0. Annuler")
 
-        choix = input("\nSélectionnez la station à modifier (numéro): ").strip()
+        choix = input(
+            "\nSélectionnez la station à modifier (numéro): "
+        ).strip()
 
         try:
             choix_int = int(choix)
@@ -536,20 +624,28 @@ class MainMenu:
                 station_id = stations_list[choix_int - 1][0]
                 station_nom = stations_list[choix_int - 1][1]['nom']
 
-                new_url = input(f"\nNouvelle URL de l'API pour '{station_nom}': ").strip()
+                new_url = input(
+                    f"\nNouvelle URL de l'API pour '{station_nom}': "
+                ).strip()
 
                 if new_url:
                     # Test de l'URL
                     print("\n🔍 Test de l'URL...")
                     if self._api_service.test_api_url(new_url):
                         print("✅ URL valide !")
-                        command = UpdateStationUrlCommand(self._config, station_id, new_url)
+                        command = UpdateStationUrlCommand(
+                            self._config, station_id, new_url
+                        )
                         self._command_invoker.execute_command(command)
                     else:
                         print("⚠️  L'URL ne semble pas valide.")
-                        confirmation = input("Mettre à jour quand même ? (o/n): ").lower()
+                        confirmation = input(
+                            "Mettre à jour quand même ? (o/n): "
+                        ).lower()
                         if confirmation == 'o':
-                            command = UpdateStationUrlCommand(self._config, station_id, new_url)
+                            command = UpdateStationUrlCommand(
+                                self._config, station_id, new_url
+                            )
                             self._command_invoker.execute_command(command)
                 else:
                     print("\n❌ L'URL ne peut pas être vide.")
@@ -578,13 +674,20 @@ class MainMenu:
         for i, (station_id, station_data) in enumerate(stations_list, 1):
             ville = villes_dict.get(station_data['ville_id'], {})
             ville_nom = ville.get('nom', 'Inconnu')
-            pays_nom = pays_dict.get(ville.get('pays_id', ''), {}).get('nom', 'Inconnu')
+            pays_nom = pays_dict.get(
+                ville.get('pays_id', ''), {}
+            ).get('nom', 'Inconnu')
 
-            print(f"{i}. {station_data['nom']} ({ville_nom}, {pays_nom})")
+            print(
+                f"{i}. {station_data['nom']} "
+                f"({ville_nom}, {pays_nom})"
+            )
 
         print("0. Annuler")
 
-        choix = input("\nSélectionnez la station à supprimer (numéro): ").strip()
+        choix = input(
+            "\nSélectionnez la station à supprimer (numéro): "
+        ).strip()
 
         try:
             choix_int = int(choix)
@@ -594,9 +697,14 @@ class MainMenu:
                 station_id = stations_list[choix_int - 1][0]
                 station_nom = stations_list[choix_int - 1][1]['nom']
 
-                confirmation = input(f"⚠️  Confirmer la suppression de '{station_nom}' (o/n)? ").lower()
+                confirmation = input(
+                    f"⚠️  Confirmer la suppression de "
+                    f"'{station_nom}' (o/n)? "
+                ).lower()
                 if confirmation == 'o':
-                    command = RemoveStationCommand(self._config, station_id)
+                    command = RemoveStationCommand(
+                        self._config, station_id
+                    )
                     self._command_invoker.execute_command(command)
             else:
                 print("\n❌ Numéro invalide.")
@@ -626,7 +734,9 @@ class MainMenu:
         for ville_id, ville_data in villes_dict.items():
             pays = pays_cache.get(ville_data['pays_id'])
             if pays:
-                villes_cache[ville_id] = Ville(ville_id, ville_data['nom'], pays)
+                villes_cache[ville_id] = Ville(
+                    ville_id, ville_data['nom'], pays
+                )
 
         # Créer les objets Station avec le Builder
         for station_id, station_data in stations_dict.items():
@@ -647,9 +757,23 @@ class MainMenu:
         return stations_list
 
     def _get_ville_name(self, station: Station) -> str:
-        """Récupère le nom de la ville d'une station."""
+        """
+        Args:
+            station: La station
+
+        Returns:
+            Le nom de la ville
+        """
         return station.ville.nom if station.ville else "Inconnu"
 
     def _get_pays_name(self, station: Station) -> str:
-        """Récupère le nom du pays d'une station."""
-        return station.ville.pays.nom if station.ville and station.ville.pays else "Inconnu"
+        """
+        Args:
+            station: La station
+
+        Returns:
+            Le nom du pays
+        """
+        if station.ville and station.ville.pays:
+            return station.ville.pays.nom
+        return "Inconnu"

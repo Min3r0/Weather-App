@@ -1,9 +1,10 @@
 """
 Pattern Decorator pour l'affichage des mesures.
 """
+import shutil
+import time
 from functools import wraps
 from typing import Callable, Any
-import shutil
 from datetime import datetime
 
 
@@ -139,7 +140,6 @@ def execution_time_decorator(func: Callable) -> Callable:
     """
     Décorateur qui mesure le temps d'exécution d'une fonction.
     """
-    import time
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
@@ -164,7 +164,7 @@ def error_handler_decorator(func: Callable) -> Callable:
     def wrapper(*args, **kwargs) -> Any:
         try:
             return func(*args, **kwargs)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, AttributeError) as e:
             print(f"\n❌ Erreur lors de l'exécution: {str(e)}")
             return None
 
