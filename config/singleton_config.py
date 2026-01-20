@@ -21,7 +21,14 @@ class ConfigurationSingleton:
 
     def __init__(self):
         if not self._initialized:
-            self._config_file = "config.json"
+            # Créer le dossier data s'il n'existe pas
+            self._data_dir = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                'data'
+            )
+            os.makedirs(self._data_dir, exist_ok=True)
+
+            self._config_file = os.path.join(self._data_dir, "config.json")
             self._initialize_config()
             self._load_configuration()
             ConfigurationSingleton._initialized = True
@@ -48,7 +55,7 @@ class ConfigurationSingleton:
                 print(f"Erreur lors du chargement de la configuration: {e}")
                 self._initialize_config()
         else:
-            print("📝 Aucun fichier de configuration trouvé. Un nouveau sera créé.")
+            print("📂 Aucun fichier de configuration trouvé. Un nouveau sera créé.")
 
     def _save_configuration(self) -> None:
         """Sauvegarde la configuration dans le fichier JSON."""
