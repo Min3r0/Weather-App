@@ -15,6 +15,11 @@
       "nom": "Compans-Cafarelli",
       "ville_id": "f52f253f",
       "api_url": "https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/42-station-meteo-toulouse-parc-compans-cafarelli/records?select=heure_de_paris%2C%20humidite%2C%20temperature_en_degre_c%2C%20pression&order_by=heure_de_paris%20DESC&limit=100"
+    },
+    "02b64cf9": {
+      "nom": "Montaudran",
+      "ville_id": "f52f253f",
+      "api_url": "https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/12-station-meteo-toulouse-montaudran/records?select=heure_de_paris%2C%20humidite%2C%20temperature_en_degre_c%2C%20pression&order_by=heure_de_paris%20DESC&limit=100"
     }
   }
 }
