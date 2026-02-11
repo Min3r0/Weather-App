@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 class ConfigurationSingleton:
     """
     Singleton pour gérer la configuration de l'application.
-    Principe SOLID: Single Responsibility - gère uniquement la configuration.
+    Principe SOLID : Single Responsibility - gère uniquement la configuration.
     """
     _instance: Optional['ConfigurationSingleton'] = None
     _initialized: bool = False
