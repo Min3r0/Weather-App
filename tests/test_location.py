@@ -2,7 +2,6 @@
 Tests unitaires pour les classes de localisation.
 Test de l'héritage et des relations entre classes.
 """
-import pytest
 from weather_app.models.location import Location, Pays, Ville, Station
 from weather_app.models.measurement import Measurement
 

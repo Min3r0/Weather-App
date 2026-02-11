@@ -1,9 +1,9 @@
 """
 Tests unitaires pour le pattern Decorator.
 """
-import pytest
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
+
 from weather_app.patterns.decorator import (
     display_measurements_decorator,
     execution_time_decorator,
@@ -25,7 +25,7 @@ class TestDisplayMeasurementsDecorator:
         with patch('builtins.print'):
             result = get_measurements()
 
-        assert result == []
+        assert not result
 
     def test_decorator_with_measurements(self):
         """Test le décorateur avec des mesures."""
@@ -80,13 +80,13 @@ class TestDisplayMeasurementsDecorator:
         """Test le décorateur avec des arguments de fonction."""
 
         @display_measurements_decorator
-        def get_measurements(station_id, limit=10):
+        def get_measurements(_station_id, _limit=10):
             return []
 
         with patch('builtins.print'):
-            result = get_measurements("s001", limit=5)
+            result = get_measurements("s001", _limit=5)
 
-        assert result == []
+        assert not result
 
     @patch('builtins.print')
     def test_decorator_calls_display_function(self, mock_print):
@@ -140,8 +140,8 @@ class TestExecutionTimeDecorator:
         """Test que le décorateur retourne le bon résultat."""
 
         @execution_time_decorator
-        def add_numbers(a, b):
-            return a + b
+        def add_numbers(first_num, second_num):
+            return first_num + second_num
 
         with patch('builtins.print'):
             result = add_numbers(5, 3)
@@ -165,8 +165,11 @@ class TestExecutionTimeDecorator:
             raise ValueError("Test error")
 
         with patch('builtins.print'):
-            with pytest.raises(ValueError, match="Test error"):
+            try:
                 failing_function()
+                assert False, "ValueError expected"
+            except ValueError as e:
+                assert str(e) == "Test error"
 
 
 class TestErrorHandlerDecorator:
@@ -215,8 +218,8 @@ class TestErrorHandlerDecorator:
 
         @error_handler_decorator
         def failing_function():
-            d = {}
-            return d["missing_key"]
+            data = {}
+            return data["missing_key"]
 
         result = failing_function()
 
@@ -244,8 +247,11 @@ class TestErrorHandlerDecorator:
         def failing_function():
             raise RuntimeError("Test error")
 
-        with pytest.raises(RuntimeError, match="Test error"):
+        try:
             failing_function()
+            assert False, "RuntimeError expected"
+        except RuntimeError as e:
+            assert str(e) == "Test error"
 
     def test_decorator_preserves_function_name(self):
         """Test que le décorateur préserve le nom de la fonction."""
@@ -260,10 +266,10 @@ class TestErrorHandlerDecorator:
         """Test le décorateur avec des arguments."""
 
         @error_handler_decorator
-        def divide(a, b):
-            if b == 0:
+        def divide(first_num, second_num):
+            if second_num == 0:
                 raise ValueError("Division by zero")
-            return a / b
+            return first_num / second_num
 
         # Succès
         assert divide(10, 2) == 5.0

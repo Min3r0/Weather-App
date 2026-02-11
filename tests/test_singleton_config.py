@@ -2,10 +2,9 @@
 Tests unitaires pour le Singleton Configuration.
 Test du pattern Singleton et de la persistance.
 """
-import pytest
-import json
 import os
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch
+
 from weather_app.config.singleton_config import ConfigurationSingleton
 
 
@@ -18,8 +17,10 @@ class TestConfigurationSingleton:
             mock_dirname.return_value = temp_data_dir
 
             # Réinitialiser le singleton pour les tests
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             instance1 = ConfigurationSingleton()
             instance2 = ConfigurationSingleton()
@@ -31,11 +32,12 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config1 = ConfigurationSingleton()
-            initial_pays = config1.get_pays()
 
             # Modifier la config
             config1.add_pays("test_id", "Test")
@@ -51,10 +53,12 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
-            config = ConfigurationSingleton()
+            ConfigurationSingleton()
 
             expected_data_dir = os.path.join(temp_data_dir, 'data')
             assert os.path.exists(expected_data_dir)
@@ -64,25 +68,27 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
 
-            assert "pays" in config._config
-            assert "villes" in config._config
-            assert "stations" in config._config
-            assert isinstance(config._config["pays"], dict)
-            assert isinstance(config._config["villes"], dict)
-            assert isinstance(config._config["stations"], dict)
+            # Vérifier la structure via les méthodes publiques
+            assert isinstance(config.get_pays(), dict)
+            assert isinstance(config.get_villes(), dict)
+            assert isinstance(config.get_stations(), dict)
 
     def test_add_pays(self, temp_data_dir):
         """Test l'ajout d'un pays."""
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -96,8 +102,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -115,8 +123,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -131,8 +141,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
 
@@ -145,8 +157,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -162,8 +176,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -184,8 +200,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -201,8 +219,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -220,8 +240,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -239,8 +261,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -262,8 +286,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -281,8 +307,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -299,8 +327,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -319,8 +349,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -338,8 +370,10 @@ class TestConfigurationSingleton:
         with patch('weather_app.config.singleton_config.os.path.dirname') as mock_dirname:
             mock_dirname.return_value = temp_data_dir
 
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
 
             config = ConfigurationSingleton()
             config.add_pays("fr001", "France")
@@ -359,14 +393,18 @@ class TestConfigurationSingleton:
             mock_dirname.return_value = temp_data_dir
 
             # Créer et configurer
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
             config1 = ConfigurationSingleton()
             config1.add_pays("fr001", "France")
 
             # Réinitialiser et recharger
+            # pylint: disable=protected-access
             ConfigurationSingleton._instance = None
             ConfigurationSingleton._initialized = False
+            # pylint: enable=protected-access
             config2 = ConfigurationSingleton()
 
             # Devrait avoir chargé la config sauvegardée

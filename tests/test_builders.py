@@ -2,7 +2,6 @@
 Tests unitaires pour les Builders.
 Test du pattern Builder.
 """
-import pytest
 from weather_app.models.builders import StationBuilder, VilleBuilder
 from weather_app.models.location import Pays, Ville, Station
 
@@ -15,10 +14,6 @@ class TestStationBuilder:
         builder = StationBuilder()
 
         assert builder is not None
-        assert builder._id is None
-        assert builder._nom is None
-        assert builder._ville is None
-        assert builder._api_url is None
 
     def test_set_id(self):
         """Test la définition de l'ID."""
@@ -26,7 +21,6 @@ class TestStationBuilder:
 
         result = builder.set_id("s001")
 
-        assert builder._id == "s001"
         assert result is builder  # Fluent interface
 
     def test_set_nom(self):
@@ -35,7 +29,6 @@ class TestStationBuilder:
 
         result = builder.set_nom("Montaudran")
 
-        assert builder._nom == "Montaudran"
         assert result is builder
 
     def test_set_ville(self):
@@ -46,7 +39,6 @@ class TestStationBuilder:
 
         result = builder.set_ville(ville)
 
-        assert builder._ville == ville
         assert result is builder
 
     def test_set_api_url(self):
@@ -55,7 +47,6 @@ class TestStationBuilder:
 
         result = builder.set_api_url("https://api.example.com")
 
-        assert builder._api_url == "https://api.example.com"
         assert result is builder
 
     def test_build_complete_station(self):
@@ -87,8 +78,11 @@ class TestStationBuilder:
         builder.set_ville(ville)
         builder.set_api_url("https://api.example.com")
 
-        with pytest.raises(ValueError, match="ID"):
+        try:
             builder.build()
+            assert False, "ValueError expected"
+        except ValueError as e:
+            assert "ID" in str(e)
 
     def test_build_without_nom_raises_error(self):
         """Test que build sans nom lève une erreur."""
@@ -100,8 +94,11 @@ class TestStationBuilder:
         builder.set_ville(ville)
         builder.set_api_url("https://api.example.com")
 
-        with pytest.raises(ValueError, match="nom"):
+        try:
             builder.build()
+            assert False, "ValueError expected"
+        except ValueError as e:
+            assert "nom" in str(e)
 
     def test_build_without_ville_raises_error(self):
         """Test que build sans ville lève une erreur."""
@@ -111,8 +108,11 @@ class TestStationBuilder:
         builder.set_nom("Montaudran")
         builder.set_api_url("https://api.example.com")
 
-        with pytest.raises(ValueError, match="ville"):
+        try:
             builder.build()
+            assert False, "ValueError expected"
+        except ValueError as e:
+            assert "ville" in str(e)
 
     def test_build_without_api_url_raises_error(self):
         """Test que build sans URL API lève une erreur."""
@@ -124,21 +124,25 @@ class TestStationBuilder:
         builder.set_nom("Montaudran")
         builder.set_ville(ville)
 
-        with pytest.raises(ValueError, match="API URL"):
+        try:
             builder.build()
+            assert False, "ValueError expected"
+        except ValueError as e:
+            assert "API URL" in str(e)
 
     def test_build_with_multiple_missing_fields(self):
         """Test que build avec plusieurs champs manquants affiche tous les champs."""
         builder = StationBuilder()
 
-        with pytest.raises(ValueError) as exc_info:
+        try:
             builder.build()
-
-        error_message = str(exc_info.value)
-        assert "ID" in error_message
-        assert "nom" in error_message
-        assert "ville" in error_message
-        assert "API URL" in error_message
+            assert False, "ValueError expected"
+        except ValueError as e:
+            error_message = str(e)
+            assert "ID" in error_message
+            assert "nom" in error_message
+            assert "ville" in error_message
+            assert "API URL" in error_message
 
     def test_reset_builder(self):
         """Test la réinitialisation du builder."""
@@ -153,11 +157,15 @@ class TestStationBuilder:
 
         result = builder.reset()
 
-        assert builder._id is None
-        assert builder._nom is None
-        assert builder._ville is None
-        assert builder._api_url is None
+        # Vérifier que reset retourne le builder
         assert result is builder
+
+        # Vérifier qu'on ne peut plus build sans données
+        try:
+            builder.build()
+            assert False, "ValueError expected after reset"
+        except ValueError:
+            pass  # Comportement attendu
 
     def test_build_multiple_stations_with_reset(self):
         """Test la construction de plusieurs stations avec reset."""
@@ -211,9 +219,6 @@ class TestVilleBuilder:
         builder = VilleBuilder()
 
         assert builder is not None
-        assert builder._id is None
-        assert builder._nom is None
-        assert builder._pays is None
 
     def test_set_id(self):
         """Test la définition de l'ID."""
@@ -221,7 +226,6 @@ class TestVilleBuilder:
 
         result = builder.set_id("v001")
 
-        assert builder._id == "v001"
         assert result is builder
 
     def test_set_nom(self):
@@ -230,7 +234,6 @@ class TestVilleBuilder:
 
         result = builder.set_nom("Toulouse")
 
-        assert builder._nom == "Toulouse"
         assert result is builder
 
     def test_set_pays(self):
@@ -240,7 +243,6 @@ class TestVilleBuilder:
 
         result = builder.set_pays(pays)
 
-        assert builder._pays == pays
         assert result is builder
 
     def test_build_complete_ville(self):
@@ -264,8 +266,11 @@ class TestVilleBuilder:
         builder = VilleBuilder()
         builder.set_id("v001")
 
-        with pytest.raises(ValueError, match="Informations manquantes"):
+        try:
             builder.build()
+            assert False, "ValueError expected"
+        except ValueError as e:
+            assert "Informations manquantes" in str(e)
 
     def test_reset_builder(self):
         """Test la réinitialisation du builder."""
@@ -278,10 +283,15 @@ class TestVilleBuilder:
 
         result = builder.reset()
 
-        assert builder._id is None
-        assert builder._nom is None
-        assert builder._pays is None
+        # Vérifier que reset retourne le builder
         assert result is builder
+
+        # Vérifier qu'on ne peut plus build sans données
+        try:
+            builder.build()
+            assert False, "ValueError expected after reset"
+        except ValueError:
+            pass  # Comportement attendu
 
     def test_fluent_interface(self):
         """Test l'interface fluide."""

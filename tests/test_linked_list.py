@@ -150,7 +150,7 @@ class TestLinkedList:
         ll.append(2)
         ll.append(3)
 
-        result = [item for item in ll]
+        result = list(ll)
 
         assert result == [1, 2, 3]
 
@@ -178,7 +178,6 @@ class TestLinkedList:
         """Test l'itération sur une liste vide."""
         ll = LinkedList()
 
-        result = [item for item in ll]
+        result = list(ll)
 
-        assert result == []
-        
+        assert not result

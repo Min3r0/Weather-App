@@ -1,8 +1,6 @@
 """
 Tests unitaires pour la classe Measurement.
 """
-import pytest
-from datetime import datetime
 from weather_app.models.measurement import Measurement
 
 
@@ -206,4 +204,3 @@ class TestMeasurement:
 
         assert "11/02/2025 10:00" in m1.format_heure()
         assert "11/02/2025 10:00" in m2.format_heure()
-        

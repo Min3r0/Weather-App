@@ -162,4 +162,3 @@ class TestQueue:
         assert q.dequeue() == "e"
 
         assert q.is_empty() is True
-        
