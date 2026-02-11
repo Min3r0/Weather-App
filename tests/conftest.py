@@ -3,9 +3,11 @@ Fixtures communes pour les tests.
 Principe DRY: centralisation des fixtures réutilisables.
 """
 import os
+import shutil
 import tempfile
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
 
 
 @pytest.fixture
@@ -16,7 +18,7 @@ def temp_config_file():
     Yields:
         str: Chemin vers le fichier temporaire
     """
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         temp_path = f.name
 
     yield temp_path
@@ -38,7 +40,6 @@ def temp_data_dir():
     yield temp_dir
 
     # Nettoyage
-    import shutil
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
 
@@ -55,7 +56,10 @@ def mock_pays():
     pays.id = "pays123"
     pays.nom = "France"
     pays.get_info.return_value = "Pays: France (ID: pays123) - 0 ville(s)"
+
+    # pylint: disable=protected-access
     pays._villes = []
+
     return pays
 
 
@@ -72,8 +76,13 @@ def mock_ville():
     ville.nom = "Toulouse"
     ville.pays = Mock()
     ville.pays.nom = "France"
-    ville.get_info.return_value = "Ville: Toulouse (Pays: France) - 0 station(s)"
+    ville.get_info.return_value = (
+        "Ville: Toulouse (Pays: France) - 0 station(s)"
+    )
+
+    # pylint: disable=protected-access
     ville._stations = []
+
     return ville
 
 
@@ -93,7 +102,10 @@ def mock_station():
     station.ville.nom = "Toulouse"
     station.ville.pays = Mock()
     station.ville.pays.nom = "France"
+
+    # pylint: disable=protected-access
     station._measurements = []
+
     station.get_measurements.return_value = []
     station.clear_measurements = Mock()
     station.add_measurement = Mock()
@@ -132,15 +144,15 @@ def sample_api_response():
                 "heure_de_paris": "2025-02-11T10:00:00+00:00",
                 "temperature_en_degre_c": 15.5,
                 "humidite": 75,
-                "pression": 101325
+                "pression": 101325,
             },
             {
                 "heure_de_paris": "2025-02-11T09:00:00+00:00",
                 "temperature_en_degre_c": 14.2,
                 "humidite": 80,
-                "pression": 101300
-            }
-        ]
+                "pression": 101300,
+            },
+        ],
     }
 
 
