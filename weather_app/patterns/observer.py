@@ -20,7 +20,6 @@ class Observer(ABC):
             *args: Arguments positionnels
             **kwargs: Arguments nommés
         """
-        pass
 
 
 class Subject:

@@ -10,16 +10,6 @@ import os
 import sys
 import uuid
 
-# Configuration de l'encodage pour Windows
-if sys.platform == 'win32':
-    try:
-        sys.stdout.reconfigure(encoding='utf-8')
-    except AttributeError:
-        # Python < 3.7
-        import codecs
-
-        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-
 from weather_app.config.singleton_config import ConfigurationSingleton
 from weather_app.services.api_service import ApiService
 from weather_app.patterns.observer import StationSelector, DataLoader
@@ -33,6 +23,17 @@ from weather_app.patterns.decorator import display_measurements_decorator
 from weather_app.data_structures.linked_list import LinkedList
 from weather_app.models.location import Pays, Ville, Station
 from weather_app.models.builders import StationBuilder
+
+# Configuration de l'encodage pour Windows
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # Python < 3.7
+        import codecs
+
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+
 
 
 def safe_print(text):

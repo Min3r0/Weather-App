@@ -66,7 +66,7 @@ class ConfigurationSingleton:
                     self._config["pays"] = loaded_config.get("pays", {})
                     self._config["villes"] = loaded_config.get("villes", {})
                     self._config["stations"] = loaded_config.get("stations", {})
-                print(f"✅ Configuration chargée avec succès")
+                print("✅ Configuration chargée avec succès")
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Erreur lors du chargement de la configuration: {e}")
                 self._initialize_config()
